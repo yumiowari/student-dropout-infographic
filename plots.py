@@ -194,64 +194,52 @@ def dropout_rate_per_age():
         '#CE1446'
     ]
 
-    fig, axis = plt.subplots(figsize=(10, 5), dpi=300)
-
-    # Barras agrupadas
-    x = np.arange(len(years)) * 2.5 # position in x (+2.5 spacing)
-    w = 0.25                        # width
-    s = 0.05                        # spacing
-    for i in range(len(age_group)):
-        pos = (
-            x
-            + (i - 3) * (w + s)
+    # Criando 3 subgráficos alinhados horizontalmente que compartilham o eixo Y
+    fig, axes = plt.subplots(1, 3, figsize=(10, 5), sharey=True, dpi=300)
+    
+    # Invertendo a ordem do eixo Y para que "Até 19 anos" fique no topo
+    y_pos = np.arange(len(age_group))#[::-1]
+    
+    for i, ax in enumerate(axes):
+        # Gráfico de barras horizontais para o ano 'i'
+        bars = ax.barh(
+            y_pos,
+            rates[i],
+            color=colors,
+            height=0.8
         )
-
-        bars = axis.bar(
-            pos,
-            rates[:, i],
-            width = w,
-            color = colors[i],
-        )
-
-        # Rótulos sobre as barras
-        for bar, rate in zip(bars, rates[:, i]):
-            axis.text(
-                bar.get_x() + bar.get_width() / 2,
-                bar.get_height() + 0.25,
-                f'{rate:.1f}'.replace('.', ','),
-                ha         = 'center',
-                va         = 'bottom',
-                fontsize   = 8,
-                fontweight = 'bold',
+        
+        # Rótulos de dados sobre/ao lado das barras
+        for bar, rate in zip(bars, rates[i]):
+            ax.text(
+                bar.get_width() + 0.5,
+                bar.get_y() + bar.get_height() / 2,
+                f'{rate:.1f}%'.replace('.', ','),
+                ha='left',
+                va='center',
+                fontsize=8,
+                fontweight='bold',
             )
-
-    axis.set_ylabel('Taxa de Evasão (%)')
-
-    # Configuração dos eixos
-    axis.set_xticks(x)
-    axis.set_xticklabels(years)
-    axis.set_yticks([])
-
-    for spine in ['top', 'left', 'right']:
-        axis.spines[spine].set_visible(False)
-
-    # Legenda inferior
-    legend = [
-        Patch(
-            facecolor = colors[i],
-            label     = age_group[i]
-        )
-        for i in range(len(age_group))
-    ]
-
-    axis.legend(
-        handles        = legend,
-        loc            = 'upper center',
-        bbox_to_anchor = (0.5, -0.1),
-        ncol           = 4,
-        frameon        = False,
-    )
-
+            
+        # Rótulo do eixo X sendo o Ano correspondente
+        ax.set_xlabel(years[i])
+        
+        # Configuração dos eixos (limpeza visual)
+        ax.set_xticks([]) # Oculta os valores de X (já estão nas barras)
+        
+        for spine in ['top', 'right', 'bottom']:
+            ax.spines[spine].set_visible(False)
+            
+        if i == 0:
+            # Mantém a linha do eixo Y apenas no primeiro gráfico
+            ax.spines['left'].set_visible(True)
+            ax.set_yticks(y_pos)
+            ax.set_yticklabels(age_group)
+        else:
+            # Oculta a linha do eixo Y nos gráficos subsequentes
+            ax.spines['left'].set_visible(False)
+            ax.tick_params(axis='y', length=0)  
+    
     return fig
 ###
   #
